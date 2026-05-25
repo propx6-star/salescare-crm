@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, Users, Calendar, FileText, BarChart2, Bell, X, Check, Settings, Package, DollarSign, LogOut, ShieldAlert, Store, UserCog, Wrench } from 'lucide-react';
+import { Home, Users, Calendar, FileText, BarChart2, Bell, X, Check, Settings, Package, DollarSign, LogOut, ShieldAlert, Store, UserCog, Wrench, RefreshCw } from 'lucide-react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/db';
 import { isToday, parseISO } from 'date-fns';
@@ -116,6 +116,14 @@ export default function Layout() {
           </div>
 
           <div className="flex items-center gap-3 relative">
+            <button 
+              onClick={() => window.location.reload()}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-green-50 text-green-700 hover:bg-green-100 rounded-lg text-sm font-medium transition-colors border border-green-200"
+              title="Làm mới dữ liệu hệ thống"
+            >
+              <RefreshCw className="w-4 h-4" />
+              <span className="hidden sm:inline">Làm mới</span>
+            </button>
             <button 
               onClick={() => setShowNotifications(!showNotifications)}
               className="relative p-2 text-slate-500 hover:bg-slate-100 rounded-full transition-colors"

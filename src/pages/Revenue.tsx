@@ -8,7 +8,9 @@ import PaymentSettingsModal from '../components/revenue/PaymentSettingsModal';
 import { useAuthStore } from '../store/authStore';
 
 export default function Revenue() {
-  const [dateFilter, setDateFilter] = useState<'today' | 'week' | 'month' | 'all'>('today');
+  const [dateFilter, setDateFilter] = useState<'today' | 'week' | 'month' | 'all' | 'custom'>('today');
+  const [customStartDate, setCustomStartDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [customEndDate, setCustomEndDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPaymentSettingsOpen, setIsPaymentSettingsOpen] = useState(false);
@@ -26,6 +28,7 @@ export default function Revenue() {
       case 'today': return { start: startOfDay(now), end: endOfDay(now) };
       case 'week': return { start: startOfWeek(now, { weekStartsOn: 1 }), end: endOfWeek(now, { weekStartsOn: 1 }) };
       case 'month': return { start: startOfMonth(now), end: endOfMonth(now) };
+      case 'custom': return { start: startOfDay(new Date(customStartDate)), end: endOfDay(new Date(customEndDate)) };
       default: return null;
     }
   };
@@ -79,11 +82,32 @@ export default function Revenue() {
       </div>
 
       {/* Date Filter */}
-      <div className="flex gap-2 bg-white p-1 rounded-lg border border-slate-200 shadow-sm w-max">
-        <button onClick={() => setDateFilter('today')} className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${dateFilter === 'today' ? 'bg-slate-800 text-white' : 'text-slate-600 hover:bg-slate-100'}`}>Hôm nay</button>
-        <button onClick={() => setDateFilter('week')} className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${dateFilter === 'week' ? 'bg-slate-800 text-white' : 'text-slate-600 hover:bg-slate-100'}`}>Tuần này</button>
-        <button onClick={() => setDateFilter('month')} className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${dateFilter === 'month' ? 'bg-slate-800 text-white' : 'text-slate-600 hover:bg-slate-100'}`}>Tháng này</button>
-        <button onClick={() => setDateFilter('all')} className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${dateFilter === 'all' ? 'bg-slate-800 text-white' : 'text-slate-600 hover:bg-slate-100'}`}>Tất cả</button>
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="flex gap-2 bg-white p-1 rounded-lg border border-slate-200 shadow-sm w-max">
+          <button onClick={() => setDateFilter('today')} className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${dateFilter === 'today' ? 'bg-slate-800 text-white' : 'text-slate-600 hover:bg-slate-100'}`}>Hôm nay</button>
+          <button onClick={() => setDateFilter('week')} className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${dateFilter === 'week' ? 'bg-slate-800 text-white' : 'text-slate-600 hover:bg-slate-100'}`}>Tuần này</button>
+          <button onClick={() => setDateFilter('month')} className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${dateFilter === 'month' ? 'bg-slate-800 text-white' : 'text-slate-600 hover:bg-slate-100'}`}>Tháng này</button>
+          <button onClick={() => setDateFilter('all')} className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${dateFilter === 'all' ? 'bg-slate-800 text-white' : 'text-slate-600 hover:bg-slate-100'}`}>Tất cả</button>
+          <button onClick={() => setDateFilter('custom')} className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${dateFilter === 'custom' ? 'bg-slate-800 text-white' : 'text-slate-600 hover:bg-slate-100'}`}>Tùy chọn</button>
+        </div>
+        
+        {dateFilter === 'custom' && (
+          <div className="flex items-center gap-2 bg-white p-1 rounded-lg border border-slate-200 shadow-sm animate-in fade-in slide-in-from-left-2">
+            <input 
+              type="date" 
+              value={customStartDate}
+              onChange={(e) => setCustomStartDate(e.target.value)}
+              className="px-3 py-1.5 border border-slate-200 rounded-md text-sm outline-none focus:border-blue-500"
+            />
+            <span className="text-slate-400">-</span>
+            <input 
+              type="date" 
+              value={customEndDate}
+              onChange={(e) => setCustomEndDate(e.target.value)}
+              className="px-3 py-1.5 border border-slate-200 rounded-md text-sm outline-none focus:border-blue-500"
+            />
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

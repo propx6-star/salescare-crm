@@ -1,6 +1,7 @@
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, dialog } from 'electron'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import { autoUpdater } from 'electron-updater'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -53,4 +54,28 @@ app.on('activate', () => {
   }
 })
 
-app.whenReady().then(createWindow)
+app.whenReady().then(() => {
+  createWindow();
+
+  // Kiểm tra cập nhật
+  autoUpdater.checkForUpdatesAndNotify();
+
+  autoUpdater.on('update-available', () => {
+    dialog.showMessageBox({
+      type: 'info',
+      title: 'Bản cập nhật có sẵn',
+      message: 'Có phiên bản mới. Đang tải xuống trong nền...'
+    });
+  });
+
+  autoUpdater.on('update-downloaded', () => {
+    dialog.showMessageBox({
+      type: 'info',
+      title: 'Đã tải xong bản cập nhật',
+      message: 'Bản cập nhật đã được tải xuống. Ứng dụng sẽ tự động khởi động lại và cài đặt ngay bây giờ.',
+      buttons: ['Khởi động lại ngay']
+    }).then(() => {
+      setImmediate(() => autoUpdater.quitAndInstall());
+    });
+  });
+})

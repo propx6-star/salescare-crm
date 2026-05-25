@@ -10,6 +10,7 @@ interface EditOrderModalProps {
 
 export default function EditOrderModal({ order, onClose, onSuccess }: EditOrderModalProps) {
   const [formData, setFormData] = useState({
+    total_amount: order.total_amount || 0,
     paid_amount: order.paid_amount || 0,
     payment_status: order.payment_status || 'Chưa thanh toán',
     order_status: order.order_status || 'Hoàn thành',
@@ -20,8 +21,19 @@ export default function EditOrderModal({ order, onClose, onSuccess }: EditOrderM
   const [isSubmitting, setIsSubmitting] = useState(false);
   const orderMutation = useSupabaseMutation('orders');
 
-  const totalAmount = order.total_amount || 0;
-  const debtAmount = Math.max(0, totalAmount - formData.paid_amount);
+  const debtAmount = Math.max(0, formData.total_amount - formData.paid_amount);
+
+  // Auto reset to 0 if canceled
+  useEffect(() => {
+    if (formData.order_status === 'Đã hủy') {
+      setFormData(prev => ({
+        ...prev,
+        total_amount: 0,
+        paid_amount: 0,
+        payment_status: 'Đã hủy'
+      }));
+    }
+  }, [formData.order_status]);
 
   // Auto update payment_status based on debtAmount
   useEffect(() => {
@@ -40,6 +52,7 @@ export default function EditOrderModal({ order, onClose, onSuccess }: EditOrderM
     
     try {
       await orderMutation.update(order.id, {
+        total_amount: formData.total_amount,
         paid_amount: formData.paid_amount,
         debt_amount: debtAmount,
         payment_status: formData.payment_status,
@@ -74,10 +87,15 @@ export default function EditOrderModal({ order, onClose, onSuccess }: EditOrderM
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2">
-              <label className="block text-sm font-medium text-slate-700 mb-1">Tổng tiền hóa đơn</label>
-              <div className="px-3 py-2 bg-slate-100 border border-slate-200 rounded-lg text-slate-600 font-semibold text-right">
-                {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(totalAmount)}
-              </div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Tổng tiền hóa đơn (VNĐ)</label>
+              <input 
+                type="number" 
+                min="0"
+                value={formData.total_amount}
+                onChange={e => setFormData({...formData, total_amount: Number(e.target.value)})}
+                disabled={formData.order_status === 'Đã hủy'}
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 font-semibold text-slate-800 disabled:bg-slate-100 disabled:text-slate-500"
+              />
             </div>
 
             <div>
@@ -87,7 +105,8 @@ export default function EditOrderModal({ order, onClose, onSuccess }: EditOrderM
                 min="0"
                 value={formData.paid_amount}
                 onChange={e => setFormData({...formData, paid_amount: Number(e.target.value)})}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 text-right"
+                disabled={formData.order_status === 'Đã hủy'}
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 text-right disabled:bg-slate-100 disabled:text-slate-500"
               />
             </div>
             
@@ -113,11 +132,13 @@ export default function EditOrderModal({ order, onClose, onSuccess }: EditOrderM
               <select 
                 value={formData.payment_status}
                 onChange={e => setFormData({...formData, payment_status: e.target.value})}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={formData.order_status === 'Đã hủy'}
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-slate-100 disabled:text-slate-500"
               >
                 <option value="Chưa thanh toán">Chưa thanh toán</option>
                 <option value="Thanh toán một phần">Thanh toán một phần</option>
                 <option value="Đã thanh toán">Đã thanh toán</option>
+                <option value="Đã hủy">Đã hủy</option>
               </select>
             </div>
             
